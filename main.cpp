@@ -7,9 +7,15 @@
 
 #include <HamsterAPIClientCPP/Hamster.h>
 #include <iostream>
+#include <math.h>
+
 using namespace std;
 using namespace HamsterAPI;
 HamsterAPI::Hamster * hamster;
+
+// Globals
+OccupancyGrid ogrid;
+cv::Mat m;
 
 void getScansBetween(double min, double max, std::vector<double> & distances) {
 	HamsterAPI::LidarScan scan = hamster->getLidarScan();
@@ -21,7 +27,7 @@ void getScansBetween(double min, double max, std::vector<double> & distances) {
 	}
 }
 
-bool willCollide(std::vector<double> distances, int angle_from_center, int& collisionCount) {
+bool willCollide(std::vector<double> distances, int angle_from_center, int& collisionCount, int startAngle) {
 	HamsterAPI::LidarScan scan = hamster->getLidarScan();
 
 	int collisions = 0;
@@ -29,13 +35,26 @@ bool willCollide(std::vector<double> distances, int angle_from_center, int& coll
 	for (size_t i = distances.size() / 2 - angle_from_center / 2;
 			i < distances.size() / 2 + angle_from_center / 2; i++)
 		if (distances[i] < scan.getMaxRange() / 4.0)
+		{
 			collisions++;
+
+			// Paint on the grid
+			Pose loc = hamster->getPose();
+			float a = loc.getHeading();
+			float b = fmod((startAngle + i * scan.getScanAngleIncrement()), 360);
+			float obsX = loc.getX() + (distances[i] * cos(a + b));
+			float obsY = loc.getY() + (distances[i] * sin(a + b));
+
+			m.at<unsigned char>(obsX, obsY) = 255;
+			cv::imshow("OccupancyGrid-view",m);
+		}
+
 	collisionCount = collisions;
 
 	return collisions >= angle_from_center / 4.0;
 }
 
-bool willCollide(std::vector<double> distances, int angle_from_center) {
+bool willCollide(std::vector<double> distances, int angle_from_center, int startAngle) {
 	HamsterAPI::LidarScan scan = hamster->getLidarScan();
 
 	int collisions = 0;
@@ -43,7 +62,19 @@ bool willCollide(std::vector<double> distances, int angle_from_center) {
 	for (size_t i = distances.size() / 2 - angle_from_center / 2;
 			i < distances.size() / 2 + angle_from_center / 2; i++)
 		if (distances[i] < scan.getMaxRange() / 4.0)
+		{
 			collisions++;
+
+			// Paint on the grid
+			Pose loc = hamster->getPose();
+			float a = loc.getHeading();
+			float b = fmod((startAngle + i * scan.getScanAngleIncrement()), 360);
+			float obsX = loc.getX() + (distances[i] * cos(a + b));
+			float obsY = loc.getY() + (distances[i] * sin(a + b));
+
+			m.at<unsigned char>(obsX, obsY) = 255;
+			cv::imshow("OccupancyGrid-view",m);
+		}
 
 	return collisions >= angle_from_center / 4.0;
 }
@@ -55,7 +86,7 @@ bool isFrontFree(int &collisionCount) {
 
 	getScansBetween(90, 270, distances);
 
-	return !willCollide(distances, 40, collisionCount);
+	return !willCollide(distances, 40, collisionCount, 90);
 }
 
 bool isLeftFree(int &collisionCount) {
@@ -65,7 +96,7 @@ bool isLeftFree(int &collisionCount) {
 
 	getScansBetween(180, 360, distances);
 
-	return !willCollide(distances, 40, collisionCount);
+	return !willCollide(distances, 40, collisionCount, 180);
 }
 
 bool isRightFree(int &collisionCount) {
@@ -75,7 +106,7 @@ bool isRightFree(int &collisionCount) {
 
 	getScansBetween(0, 180, distances);
 
-	return !willCollide(distances, 40, collisionCount);
+	return !willCollide(distances, 40, collisionCount, 0);
 }
 
 bool isBackFree(int &collisionCount) {
@@ -86,7 +117,7 @@ bool isBackFree(int &collisionCount) {
 	getScansBetween(270, 360, distances);
 	getScansBetween(0, 90, distances);
 
-	return !willCollide(distances, 40, collisionCount);
+	return !willCollide(distances, 40, collisionCount, 270);
 }
 
 bool isFrontFree() {
@@ -96,7 +127,7 @@ bool isFrontFree() {
 
 	getScansBetween(90, 270, distances);
 
-	return !willCollide(distances, 40);
+	return !willCollide(distances, 40, 90);
 }
 
 bool isLeftFree() {
@@ -106,7 +137,7 @@ bool isLeftFree() {
 
 	getScansBetween(180, 360, distances);
 
-	return !willCollide(distances, 40);
+	return !willCollide(distances, 40, 180);
 }
 
 bool isRightFree() {
@@ -116,7 +147,7 @@ bool isRightFree() {
 
 	getScansBetween(0, 180, distances);
 
-	return !willCollide(distances, 40);
+	return !willCollide(distances, 40, 0);
 }
 
 bool isBackFree() {
@@ -127,7 +158,7 @@ bool isBackFree() {
 	getScansBetween(270, 360, distances);
 	getScansBetween(0, 90, distances);
 
-	return !willCollide(distances, 40);
+	return !willCollide(distances, 40, 270);
 }
 
 
@@ -168,6 +199,11 @@ int main(int argc, char ** argv) {
 	try {
 		hamster = new HamsterAPI::Hamster(1);
 		sleep(1);
+		cv::namedWindow("OccupancyGrid-view");
+		ogrid = hamster->getSLAMMap();
+		int width = ogrid.getWidth();
+		int height = ogrid.getHeight();
+		m = cv::Mat(width, height,CV_8UC1);
 
 		while (hamster->isConnected()) {
 			try {
