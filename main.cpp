@@ -13,10 +13,6 @@ using namespace std;
 using namespace HamsterAPI;
 HamsterAPI::Hamster * hamster;
 
-// Globals
-OccupancyGrid ogrid;
-cv::Mat m;
-
 void getScansBetween(double min, double max, std::vector<double> & distances) {
 	HamsterAPI::LidarScan scan = hamster->getLidarScan();
 
@@ -39,14 +35,18 @@ bool willCollide(std::vector<double> distances, int angle_from_center, int& coll
 			collisions++;
 
 			// Paint on the grid
+			// TODO: Check if pose location is corrent.
 			Pose loc = hamster->getPose();
-			float a = loc.getHeading();
+			//float a = loc.getHeading();
 			float b = fmod((startAngle + i * scan.getScanAngleIncrement()), 360);
-			float obsX = loc.getX() + (distances[i] * cos(a + b));
-			float obsY = loc.getY() + (distances[i] * sin(a + b));
-
-			m.at<unsigned char>(obsX, obsY) = 255;
-			cv::imshow("OccupancyGrid-view",m);
+			//float obsX = loc.getX() + (distances[i] * cos(a + b));
+			//float obsY = loc.getY() + (distances[i] * sin(a + b));
+			//float distance = sqrtf(pow(obsX - loc.getX(), 2) + pow(obsY - loc.getY(), 2));
+			printf("Distance: %f.2; Position: %f.2, %f.2; Angle: %f.2;\n",
+					distances[i],
+					loc.getX(),
+					loc.getY(),
+					b);
 		}
 
 	collisionCount = collisions;
@@ -66,14 +66,18 @@ bool willCollide(std::vector<double> distances, int angle_from_center, int start
 			collisions++;
 
 			// Paint on the grid
+			// TODO: Check if pose location is corrent.
 			Pose loc = hamster->getPose();
-			float a = loc.getHeading();
+			//float a = loc.getHeading();
 			float b = fmod((startAngle + i * scan.getScanAngleIncrement()), 360);
-			float obsX = loc.getX() + (distances[i] * cos(a + b));
-			float obsY = loc.getY() + (distances[i] * sin(a + b));
-
-			m.at<unsigned char>(obsX, obsY) = 255;
-			cv::imshow("OccupancyGrid-view",m);
+			//float obsX = loc.getX() + (distances[i] * cos(a + b));
+			//float obsY = loc.getY() + (distances[i] * sin(a + b));
+			//float distance = sqrtf(pow(obsX - loc.getX(), 2) + pow(obsY - loc.getY(), 2));
+			printf("Distance: %f.2; Position: %f.2, %f.2; Angle: %f.2;\n",
+					distances[i],
+					loc.getX(),
+					loc.getY(),
+					b);
 		}
 
 	return collisions >= angle_from_center / 4.0;
@@ -199,11 +203,6 @@ int main(int argc, char ** argv) {
 	try {
 		hamster = new HamsterAPI::Hamster(1);
 		sleep(1);
-		cv::namedWindow("OccupancyGrid-view");
-		ogrid = hamster->getSLAMMap();
-		int width = ogrid.getWidth();
-		int height = ogrid.getHeight();
-		m = cv::Mat(width, height,CV_8UC1);
 
 		while (hamster->isConnected()) {
 			try {
