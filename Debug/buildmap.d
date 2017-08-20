@@ -1,0 +1,1 @@
+buildmap.o: ../buildmap.cpp
