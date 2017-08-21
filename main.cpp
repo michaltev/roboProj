@@ -59,6 +59,7 @@ int main()
 		Navigator navigator(hamster, &robot, &mapDisplay);
 
 		robot.Init(startCoordinate);
+		//mapDisplay.PrintRouteCvMat(localizationManager.GetParticles());
 
 		Coordinate currCoordinate;
 		int waypointIndex = 0;
@@ -93,6 +94,7 @@ int main()
 
 					waypointIndex++;
 
+					/////////////////////////////////////////
 					/*robot.UpdateCoordinate();
 
 					deltaX = robot.GetDeltaX();
@@ -102,8 +104,9 @@ int main()
 					cout << "Real values:" << " deltaX : " << deltaX << " deltaY: " << deltaY << " deltaYaw : " << deltaYaw << endl;
 
 					localizationManager.UpdateParticles(deltaX, deltaY, deltaYaw);
-					MapDisplay.PrintRouteCvMat(localizationManager.GetParticles());
+					mapDisplay.PrintRouteCvMat(localizationManager.GetParticles());
 					localizationManager.PrintParticles();*/
+					/////////////////////////////////////////
 				}
 
 				navigator.Stop();

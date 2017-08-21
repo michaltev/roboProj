@@ -306,6 +306,6 @@ void MapDisplay::ColorPixelByParticles(int currentCellValue, int i, int j)
 
 MapDisplay::~MapDisplay()
 {
-	/*cv::destroyWindow("OccupancyGrid-view-route");
-	cv::destroyWindow("OccupancyGrid-view-particles");*/
+	cv::destroyWindow("OccupancyGrid-view-route");
+	cv::destroyWindow("OccupancyGrid-view-particles");
 }

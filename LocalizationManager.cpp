@@ -21,6 +21,7 @@
 #define GOOD_BELIEF_PARTICLES 80
 #define ADJACENT_PARTICLE_DESTINATION 1
 #define PARTICLE_CORRECTION_MAX_RETRIES 20
+#define RADIUS 100
 
 LocalizationManager::LocalizationManager(
 	Hamster * hamster, OccupancyGrid & ogrid,
@@ -29,14 +30,14 @@ LocalizationManager::LocalizationManager(
 		ogridHeight(mapHeight), ogridWidth(mapWidth), ogridResolution(mapResolution)
 {}
 
-void LocalizationManager::InitParticles()
+void LocalizationManager::InitParticles(Coordinate currCoordinate)
 {
 	particles.resize(NUM_OF_PARTICLES);
 
 	for (size_t i = 0; i < particles.size(); i++)
 	{
 		particles.at(i) = new Particle();
-		RandomizeParticle(particles.at(i));
+		RandomizeParticle(particles.at(i), currCoordinate);
 	}
 }
 
@@ -58,14 +59,14 @@ Particle * LocalizationManager::GetTopParticle() const
 
 void LocalizationManager::ConvertFromMapCoordinateToMatIndex(Particle * particle)
 {
-	particle->i = (double) ogridHeight / 2 - particle->y / ogridResolution;
-	particle->j = particle->x / ogridResolution + (double) ogridWidth / 2;
+	particle->i = particle->x / ogridResolution + (double) ogridWidth / 2;
+	particle->j = (double) ogridHeight / 2 - particle->y / ogridResolution;
 }
 
 void LocalizationManager::ConvertFromMatIndexToMapCoordinate(Particle * particle)
 {
-	particle->x = (particle->j - (double) ogridWidth / 2) * ogridResolution;
-	particle->y = ((double) ogridHeight / 2 - particle->i) * ogridResolution;
+	particle->x = (particle->i - (double) ogridWidth / 2) * ogridResolution;
+	particle->y = ((double) ogridHeight / 2 - particle->j) * ogridResolution;
 }
 
 bool LocalizationManager::InsertParticleIntoMap(Particle * particle)
@@ -133,6 +134,8 @@ void LocalizationManager::UpdateParticles(double deltaX, double deltaY, double d
 {
 	int size = particles.size();
 
+	Coordinate currCoordinate = { .x = deltaX, .y = deltaY, .yaw = deltaYaw };
+
 	for (size_t i = 0; i < particles.size(); i++)
 	{
 		Particle * currParticle = particles.at(i);
@@ -182,7 +185,7 @@ void LocalizationManager::UpdateParticles(double deltaX, double deltaY, double d
 				else
 				{
 					// If we don't have a better particle, randomize a new one.
-					RandomizeParticle(currParticle);
+					RandomizeParticle(currParticle, currCoordinate);
 				}
 			}
 		}
@@ -205,7 +208,7 @@ void LocalizationManager::UpdateParticles(double deltaX, double deltaY, double d
 		}
 		else
 		{
-			RandomizeParticle(currParticle);
+			RandomizeParticle(currParticle, currCoordinate);
 			CalculateBelief(currParticle);
 		}
 	}
@@ -225,12 +228,12 @@ void LocalizationManager::PrintParticles() const
 	}
 }
 
-void LocalizationManager::RandomizeParticle(Particle * particleToUpdate)
+void LocalizationManager::RandomizeParticle(Particle * particleToUpdate, Coordinate currCoordiante)
 {
 	do
 	{
-		particleToUpdate->j = rand() % ogridWidth;
-		particleToUpdate->i = rand() % ogridHeight;
+		particleToUpdate->j = currCoordiante.x + (rand() % RADIUS);
+		particleToUpdate->i = currCoordiante.y + (rand() % RADIUS);
 
 	} while (ogrid.getCell(particleToUpdate->i, particleToUpdate->j) != CELL_FREE);
 

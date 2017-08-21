@@ -48,7 +48,7 @@ void Robot::Init(Coordinate startCoordinate)
 	sleep(3);
 	hamster->setInitialPose(initialPose);
 
-	//localizationManager->InitParticles();
+	//localizationManager->InitParticles(startCoordinate);
 
 	UpdateCoordinate();
 }
@@ -78,7 +78,6 @@ Coordinate Robot::GetCurrHamsterCoordinate()
 			.y = topParticle->y + 2*inflationRadius,
 			.yaw = topParticle->yaw
 	};*/
-
 
 	Pose currPose = hamster->getPose();
 

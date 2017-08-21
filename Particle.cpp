@@ -16,7 +16,7 @@
 
 // Ctor
 Particle::Particle()
-{}
+{this->x=0; this->y=0; this->i=0; this->j=0;}
 
 // Ctor
 Particle::Particle(double posX, double posY, double yaw)

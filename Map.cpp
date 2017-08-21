@@ -18,8 +18,7 @@
 #define BLACK_COLOR 0;
 
 Map::Map()
-{
-}
+{}
 
 Map::Map(HamsterAPI::OccupancyGrid * map, int robotSizeInCm,
 		 Coordinate startCoordinate, Coordinate goalCoordinate,
@@ -180,6 +179,4 @@ bool Map::DoesCellHaveOccupiedNeighbor(int rowIndex, int colIndex)
 	return false;
 }
 
-Map::~Map() {
-	// TODO Auto-generated destructor stub
-}
+Map::~Map() {}

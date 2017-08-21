@@ -32,14 +32,14 @@ class LocalizationManager
 		void ConvertFromMatIndexToMapCoordinate(Particle * particle);
 		float CalculateBelief(Particle * particle);
 		bool InsertParticleIntoMap(Particle * particle);
-		void RandomizeParticle(Particle * particleToUpdate);
+		void RandomizeParticle(Particle * particleToUpdate, Coordinate currCoordiante);
 		void ImproveParticle(Particle * particleToUpdate, Particle * betterParticle);
 
 	public:
 		LocalizationManager(
 				Hamster * hamster, OccupancyGrid & ogrid,
 				double mapHeight, double mapWidth, double mapResolution);
-		void InitParticles();
+		void InitParticles(Coordinate currCoordinate);
 		vector<Particle *> GetParticles() const;
 		Particle * GetTopParticle() const;
 		void UpdateParticles(double deltaX, double deltaY, double deltaYaw);
